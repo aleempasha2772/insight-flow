@@ -17,7 +17,10 @@ public class InputController {
 	@PostMapping("/upload")
 	public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file){
 		ExcelHelper.isExcelFile(file);
-		return ResponseEntity.ok().body("Success");
+		if(ExcelHelper.isExcelFile(file) == true) {
+			return ResponseEntity.ok().body("Success");
+		}
+		return ResponseEntity.badRequest().body("not xlsx file");
 	}
 	
 }

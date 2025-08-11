@@ -7,7 +7,7 @@ public class ExcelHelper {
 	public static String TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 	
 	
-	public static void isExcelFile(MultipartFile file) {
+	public static boolean isExcelFile(MultipartFile file) {
 		
 		String contentType = file.getContentType();
 		String fileName = file.getOriginalFilename();
@@ -17,6 +17,7 @@ public class ExcelHelper {
 		}
 		System.out.println("File name is : "+ fileName);
 		
+		return TYPE.equals(fileName);
 	}
 
 }
