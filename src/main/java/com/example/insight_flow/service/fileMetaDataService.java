@@ -1,8 +1,14 @@
 package com.example.insight_flow.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -83,10 +89,12 @@ public class fileMetaDataService {
 	private FileDetails insertFileDetails(MultipartFile file, String fileExtension, String mimeType) {
 		String originalFileName = file.getOriginalFilename();
 		String fileName = generateUniqueFileName(originalFileName);
-		
+		List<String> sheetNames = getAllSheetNames(file);
 		FileDetails fileDetails = new FileDetails();
 		fileDetails.setFileName(fileName);
+		fileDetails.setSheetNames(sheetNames);
 		fileDetails.setOriginalFileName(originalFileName);
+		fileDetails.setFileType(fileExtension.toUpperCase());
 		fileDetails.setMimeType(mimeType);
 		fileDetails.setFileSize(file.getSize());
 		fileDetails.setDateAndTimeUploaded(LocalDateTime.now());
@@ -112,14 +120,46 @@ public class fileMetaDataService {
         
         return originalFileName + "_" + timestamp;
     }
+	
+	
+	private List<String> getAllSheetNames(MultipartFile file){
+		List<String> sheetNamesList = new ArrayList<>();
+		String filename = file.getOriginalFilename();
+		if(filename == null) {
+			throw new IllegalArgumentException("File name is null");
+		}
+		try(InputStream inputStrem = file.getInputStream();
+				Workbook workbook = filename.toLowerCase().endsWith(".xlsx")
+				? new XSSFWorkbook(inputStrem): new HSSFWorkbook(inputStrem)){
+			int numberOfSheets = workbook.getNumberOfSheets();
+			for(int i = 0;i<numberOfSheets;i++) {
+				sheetNamesList.add(workbook.getSheetName(i));
+			}
+			
+		}catch(IOException e) {
+			throw new RuntimeException("Error reading Excel file", e);
+		}
+		return sheetNamesList;
+	}
+	
+	/*
+	 * main services starts here
+	 */
 	public FileDetails uploadFile(MultipartFile file) {
 		validateFile(file);
 		String fileExtension = extractFileType(file);
+		System.out.println("file extension : "+ fileExtension);
 		String mimeType = detectMimeType(file);
+		System.out.println("file mimeType : "+ mimeType);
 		FileDetails fileDetails = insertFileDetails(file, fileExtension, mimeType);
 		return fileDetails;
 	}
 	
+	
+	public List<FileDetails> getAllFilesMetadata(){
+		List<FileDetails> fileDetailsList= fileStorageTable.findAll();
+		return fileDetailsList;
+	}
 	
 	
 	

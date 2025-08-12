@@ -1,6 +1,7 @@
 package com.example.insight_flow.Model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.*;
 
@@ -14,6 +15,19 @@ public class FileDetails {
     private Long id;
 	
 	private String fileName;
+	private List<String> sheetNames;
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public List<String> getSheetNames() {
+		return sheetNames;
+	}
+	public void setSheetNames(List<String> sheetNames) {
+		this.sheetNames = sheetNames;
+	}
 	private String originalFileName;
 	public String getOriginalFileName() {
 		return originalFileName;
